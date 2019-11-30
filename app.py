@@ -8,7 +8,7 @@ from firebase_admin import db
 from flask import Flask, request
 from flask_cors import CORS
 from flask_restful import Resource, Api
-from flask_socketio import SocketIO
+from requests import post
 
 cred = credentials.Certificate('ids-hackathor-636a3e9f4e4c.json')
 firebase_admin.initialize_app(cred, {
@@ -25,27 +25,30 @@ app = Flask(__name__)
 api = Api(app)
 app.config['SECRET_KEY'] = 'secret!'
 cors = CORS(app)
-socketio = SocketIO(app)
+VIRUSTOTAL = '66a5fb757b258c33502762d5b0f494111d7cc70032cfcf115336ad837a13b9ea'
 DOMAIN = "bilkent.com"
 
-#Zeyad Additions
-#------------------------------------
+# Zeyad Additions
+# ------------------------------------
 from SangomaUtils.sangoma_authenticators import *
 import asyncio
+
 WEBSOCKETS_PORT = 6666
 
 G = {}  # Global Dictionary
 
+
 def start_websocket_server(port):
-        global G
-        import SangomaUtils.sangoma_authenticators
-        SangomaUtils.sangoma_authenticators.setG(G)
-        """accepts connections from incoming lambda function requests"""
-        services_authenticator = MonitoringServiceAuthenticator()
-        services_message_manager = MessageManagerWebsocketFromServices()
-        G['lambda_connection_handler'] = ConnectionHandler(authenticator=services_authenticator,
-                                                           message_manager=services_message_manager)
-        G['lambda_connection_handler'].accept_connections(port=port)
+    global G
+    import SangomaUtils.sangoma_authenticators
+    SangomaUtils.sangoma_authenticators.setG(G)
+    """accepts connections from incoming lambda function requests"""
+    services_authenticator = MonitoringServiceAuthenticator()
+    services_message_manager = MessageManagerWebsocketFromServices()
+    G['lambda_connection_handler'] = ConnectionHandler(authenticator=services_authenticator,
+                                                       message_manager=services_message_manager)
+    G['lambda_connection_handler'].accept_connections(port=port)
+
 
 class MessageManagerWebsocketFromServices:
 
@@ -53,13 +56,13 @@ class MessageManagerWebsocketFromServices:
         '''look at the incoming event (message/command), determine its priority and add it to the eventQ saved
         in the global obejct G.'''
 
-
     @staticmethod
     def report_to_connections(event):
         for connection in G['lambda_connection_handler'].connections:
             asyncio.ensure_future(G['lambda_connection_handler'].connections[connection].send(event))
 
-#MessageManagerWebsocketFromServices.report_to_connections(event)  # Reporting to WSS subscribers
+
+# MessageManagerWebsocketFromServices.report_to_connections(event)  # Reporting to WSS subscribers
 
 # -----------------------------------------------------------------
 
@@ -114,9 +117,23 @@ class AnalyzeQuery(Resource):
         return params
 
 
+class ViralUrls(Resource):
+    def post(self):
+        params = request.get_json(force=True)
+        malicious = []
+        for url in params:
+            post("https://www.virustotal.com/vtapi/v2/url/scan", data={'apikey': VIRUSTOTAL, 'url': url})
+            res = post("https://www.virustotal.com/vtapi/v2/url/report", data={'apikey': VIRUSTOTAL, 'resource': url})
+            for i in res.json()['scans'].values():
+                if i['detected']:
+                    malicious.append(url)
+                break
+        return malicious
+
+
 api.add_resource(AnalyzeQuery, '/api/query')
+api.add_resource(ViralUrls, '/api/viralurls')
 
 if __name__ == '__main__':
-    
     start_websocket_server(WEBSOCKETS_PORT)
     app.run(host='0.0.0.0')

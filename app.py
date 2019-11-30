@@ -6,6 +6,7 @@ import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import db
 from flask import Flask, request
+from flask_cors import CORS
 from flask_restful import Resource, Api
 from flask_socketio import SocketIO
 
@@ -23,6 +24,7 @@ with open('payloads.json', encoding="utf8") as f:
 app = Flask(__name__)
 api = Api(app)
 app.config['SECRET_KEY'] = 'secret!'
+cors = CORS(app)
 socketio = SocketIO(app)
 DOMAIN = "bilkent.com"
 
@@ -56,22 +58,22 @@ class AnalyzeQuery(Resource):
             # XSS
             for pload in XSS:
                 if pload in val:
-                    send_ref(ip, param, val, 'xss')
+                    send_ref(ip, param, val, 'XSS')
                     break
             # SQLi
             if "'" in val and ('and' in val.lower() or 'or' in val.lower()) or '--' in val:
-                send_ref(ip, param, val, 'sqli')
+                send_ref(ip, param, val, 'SQLi')
             # CRLF
             if '%0d' in val.lower() or '%0a' in val.lower():
-                send_ref(ip, param, val, 'csrf')
+                send_ref(ip, param, val, 'CRLF')
             # OPEN Redirect
             if len([i for i in ['url', 'redirect', 'next'] if i in param.lower()]) > 0 \
                     and not_same_domain(val):
-                send_ref(ip, param, val, 'open_redirect')
+                send_ref(ip, param, val, 'Open Redirect')
             # Path Traversal
             for pload in TRAVERS:
                 if pload in val:
-                    send_ref(ip, param, val, 'path_traversal')
+                    send_ref(ip, param, val, 'Path Traversal')
                     break
 
         return params

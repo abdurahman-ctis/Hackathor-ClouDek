@@ -28,6 +28,41 @@ cors = CORS(app)
 socketio = SocketIO(app)
 DOMAIN = "bilkent.com"
 
+#Zeyad Additions
+#------------------------------------
+from SangomaUtils.sangoma_authenticators import *
+import asyncio
+WEBSOCKETS_PORT = 6666
+
+G = {}  # Global Dictionary
+
+def start_websocket_server(port):
+        global G
+        import SangomaUtils.sangoma_authenticators
+        SangomaUtils.sangoma_authenticators.setG(G)
+        """accepts connections from incoming lambda function requests"""
+        services_authenticator = MonitoringServiceAuthenticator()
+        services_message_manager = MessageManagerWebsocketFromServices()
+        G['lambda_connection_handler'] = ConnectionHandler(authenticator=services_authenticator,
+                                                           message_manager=services_message_manager)
+        G['lambda_connection_handler'].accept_connections(port=port)
+
+class MessageManagerWebsocketFromServices:
+
+    async def process_message(self, connection_and_msg):
+        '''look at the incoming event (message/command), determine its priority and add it to the eventQ saved
+        in the global obejct G.'''
+
+
+    @staticmethod
+    def report_to_connections(event):
+        for connection in G['lambda_connection_handler'].connections:
+            asyncio.ensure_future(G['lambda_connection_handler'].connections[connection].send(event))
+
+#MessageManagerWebsocketFromServices.report_to_connections(event)  # Reporting to WSS subscribers
+
+# -----------------------------------------------------------------
+
 
 def send_ref(ip, param, val, type):
     ref.push({
@@ -82,4 +117,6 @@ class AnalyzeQuery(Resource):
 api.add_resource(AnalyzeQuery, '/api/query')
 
 if __name__ == '__main__':
-    socketio.run(app)
+    
+    start_websocket_server(WEBSOCKETS_PORT)
+    app.run(host='0.0.0.0')

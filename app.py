@@ -131,8 +131,16 @@ class ViralUrls(Resource):
         return malicious
 
 
+class CSRF(Resource):
+    def post(self):
+        params = request.get_json(force=True)
+        # TODO: send websocket req like:
+        # The form params['formName'] at params['location'] can be CSRF vulnerable!
+
+
 api.add_resource(AnalyzeQuery, '/api/query')
 api.add_resource(ViralUrls, '/api/viralurls')
+api.add_resource(ViralUrls, '/api/csrf')
 
 if __name__ == '__main__':
     start_websocket_server(WEBSOCKETS_PORT)

@@ -15,7 +15,7 @@ from requests import post
 from WebSocketUtils.websocket_authenticators import *
 import asyncio
 
-WEBSOCKETS_PORT = 80
+WEBSOCKETS_PORT = 8000
 TORNADO_PORT = 5555
 TORNADO_DEBUG = True
 

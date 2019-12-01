@@ -1,19 +1,20 @@
-from tornado.web import RequestHandler
+import datetime
 import json
 from time import time
-import datetime
+from urllib.parse import urlparse
+
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import db
-from urllib.parse import urlparse
 from requests import post
-
+from tornado.web import RequestHandler
 
 cred = credentials.Certificate('ids-hackathor-636a3e9f4e4c.json')
 firebase_admin.initialize_app(cred, {
     'databaseURL': 'https://ids-hackathor.firebaseio.com/'
 })
 ref = db.reference('')
+intrusion_ref = db.reference('intrusions')
 
 with open('payloads.json', encoding="utf8") as f:
     loaded = json.load(f)
@@ -55,13 +56,14 @@ class BaseHandler(RequestHandler):
         self.set_status(204)
         self.finish()
 
+
 class AnalyzeQuery(BaseHandler):
-    def initialize(self,handlers):
+    def initialize(self, handlers):
         self.report = handlers["report"]
 
     async def get(self):
         result = db.reference('').get()
-        self.write({"Result" : "200 Success"})
+        self.write({"Result": "200 Success"})
 
     async def post(self):
         print("Entered post")
@@ -72,37 +74,37 @@ class AnalyzeQuery(BaseHandler):
             for pload in XSS:
                 if pload in val:
                     send_ref(ip, param, val, 'XSS')
-                    self.report({"XSS" : {"ip":ip , "param" : param , "val" : val, "uid" : 99}})
+                    self.report({"XSS": {"ip": ip, "param": param, "val": val, "uid": 99}})
                     break
             # SQLi
             if "'" in val and ('and' in val.lower() or 'or' in val.lower()) or '--' in val:
                 send_ref(ip, param, val, 'SQLi')
-                self.report({"SQLi" : {"ip":ip , "param" : param , "val" : val, "uid" : 99}})
+                self.report({"SQLi": {"ip": ip, "param": param, "val": val, "uid": 99}})
 
             # CRLF
             if '%0d' in val.lower() or '%0a' in val.lower():
                 send_ref(ip, param, val, 'CRLF')
-                self.report({"CRLF" : {"ip":ip , "param" : param , "val" : val, "uid" : 99}})
+                self.report({"CRLF": {"ip": ip, "param": param, "val": val, "uid": 99}})
 
             # OPEN Redirect
             if len([i for i in ['url', 'redirect', 'next'] if i in param.lower()]) > 0 \
                     and not_same_domain(val):
                 send_ref(ip, param, val, 'Open Redirect')
-                self.report({"Redirect" : {"ip":ip , "param" : param , "val" : val, "uid" : 99}})
+                self.report({"Redirect": {"ip": ip, "param": param, "val": val, "uid": 99}})
 
             # Path Traversal
             for pload in TRAVERS:
                 if pload in val:
                     send_ref(ip, param, val, 'Path Traversal')
-                    self.report({"Traversal" : {"ip":ip , "param" : param , "val" : val, "uid" : 99}})
+                    self.report({"Traversal": {"ip": ip, "param": param, "val": val, "uid": 99}})
                     break
 
-        self.write({"Result" : "200 Success"})
+        self.write({"Result": "200 Success"})
+
 
 class ViralUrls(BaseHandler):
-    def initialize(self,handlers):
+    def initialize(self, handlers):
         self.report = handlers["report"]
-
 
     async def post(self):
         params = json.loads(self.request.body)
@@ -114,39 +116,49 @@ class ViralUrls(BaseHandler):
                 if i['detected']:
                     malicious.append(url)
                 break
-    
-        self.report({"Viral" : malicious})
-        self.write({"Result" : "200 Success"})
 
+        self.report({"Viral": malicious})
+        self.write({"Result": "200 Success"})
 
 
 class CSRF(BaseHandler):
 
-    def initialize(self,handlers):
+    def initialize(self, handlers):
         self.report = handlers["report"]
 
     async def post(self):
         params = json.loads(self.request.body)
         params['uid'] = '99'
-        self.report({"CSRF" : params})
-        self.write({"Result" : "200 Success"})
+        self.report({"CSRF": params})
+        self.write({"Result": "200 Success"})
+
 
 class IntrusionDetection(BaseHandler):
 
-
-    def initialize(self,handlers):
+    def initialize(self, handlers):
         self.report = handlers["report"]
 
     async def post(self):
         params = json.loads(self.request.body)
-        #Retrive Firebase record for specific endpoint
-        #contains counter,time
-        counter = 0
-        earlierTime = datetime.datetime.now()
-        now = datetime.datetime.now()
-  
-        if (now - earlierTime).seconds > 5 and counter > 10:
-            self.report({"Intrusion" : params})
-        #Add to firebase time and increment counter, if doesn't exist create with 1 as value
-        self.write({"Result" : "200 Success"})
+        prev = intrusion_ref.get(params['path'])
+        print(prev)
+        if not prev:
+            cnt = 1
+        else:
+            cnt = prev['cnt']
+            earlier_time = datetime.datetime.now()
+            now = datetime.datetime.now()
 
+            if (now - earlier_time).seconds > 5 and cnt > 10:
+                self.report({"Intrusion": params})
+                cnt = 1
+            else:
+                cnt += 1
+
+        ref.push({
+            "ip": self.request.remote_ip,
+            "path": params['path'],
+            "time": datetime.datetime.now(),
+            "cnt": cnt
+        })
+        self.write({"Result": "200 Success"})

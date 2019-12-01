@@ -139,17 +139,11 @@ class IntrusionDetection(BaseHandler):
         self.report = handlers["report"]
 
     async def post(self):
-<<<<<<< Updated upstream
         params = json.loads(self.request.body)
         print(params)
         prev = intrusion_ref.child(params['path']).get()
         print(prev)
-=======
-        params = json.loads(self.request.body)    
-        print("XXXXXXX", params['path'])
 
-        prev = intrusion_ref.child("admin").get()
->>>>>>> Stashed changes
         if not prev:
             cnt = 1
         else:

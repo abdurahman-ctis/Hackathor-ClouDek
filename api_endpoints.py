@@ -2,14 +2,13 @@ import datetime
 import json
 from time import time
 from urllib.parse import urlparse
-
+from requests import post
 import firebase_admin
+from dateutil.parser import parse
 from firebase_admin import credentials
 from firebase_admin import db
 from requests import post
 from tornado.web import RequestHandler
-
-from dateutil.parser import parse
 
 cred = credentials.Certificate('ids-hackathor-636a3e9f4e4c.json')
 firebase_admin.initialize_app(cred, {
@@ -69,19 +68,17 @@ class AnalyzeQuery(BaseHandler):
 
     async def post(self):
         print("Entered post")
-        params = json.loads(self.request.body)
         ip = self.request.remote_ip
+        params = json.loads(self.request.body)
+        response = post("http://localhost:5000/hello/hikmet", json=params)
+        response_val = json.loads(response.text)
+        for i in response_val:
+            print(i)
+            send_ref(ip, i['param'], i['val'], i['type'])
+            self.report({i['type']: {"ip": ip, "param": i['param'], "val": i['val'],
+                                     "uid": 99, "confidence": i['confidence']}})
+
         for param, val in params.items():
-            # XSS
-            for pload in XSS:
-                if pload in val:
-                    send_ref(ip, param, val, 'XSS')
-                    self.report({"XSS": {"ip": ip, "param": param, "val": val, "uid": 99}})
-                    break
-            # SQLi
-            if "'" in val and ('and' in val.lower() or 'or' in val.lower()) or '--' in val:
-                send_ref(ip, param, val, 'SQLi')
-                self.report({"SQLi": {"ip": ip, "param": param, "val": val, "uid": 99}})
 
             # CRLF
             if '%0d' in val.lower() or '%0a' in val.lower():
@@ -93,13 +90,6 @@ class AnalyzeQuery(BaseHandler):
                     and not_same_domain(val):
                 send_ref(ip, param, val, 'Open Redirect')
                 self.report({"Redirect": {"ip": ip, "param": param, "val": val, "uid": 99}})
-
-            # Path Traversal
-            for pload in TRAVERS:
-                if pload in val:
-                    send_ref(ip, param, val, 'Path Traversal')
-                    self.report({"Traversal": {"ip": ip, "param": param, "val": val, "uid": 99}})
-                    break
 
         self.write({"Result": "200 Success"})
 

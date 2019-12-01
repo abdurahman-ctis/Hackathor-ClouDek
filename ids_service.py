@@ -15,7 +15,7 @@ from requests import post
 from SangomaUtils.sangoma_authenticators import *
 import asyncio
 
-WEBSOCKETS_PORT = 6666
+WEBSOCKETS_PORT = 80
 TORNADO_PORT = 5555
 TORNADO_DEBUG = True
 
@@ -53,10 +53,14 @@ class IDSService:
 
 
             urls = [
-                ("/api/query", AnalyzeQuery),
+                ("/api/query", AnalyzeQuery, dict(
+                    handlers={"report": MessageManagerWebsocketFromServices.report_to_connections})),
                 ("/api/csrf" , CSRF, dict(
                     handlers={"report": MessageManagerWebsocketFromServices.report_to_connections})),
-                ('/api/viralurls', ViralUrls)
+                ('/api/viralurls', ViralUrls,dict(
+                    handlers={"report": MessageManagerWebsocketFromServices.report_to_connections})),
+                ('/api/intrusion' , IntrusionDetection, dict(
+                    handlers={"report": MessageManagerWebsocketFromServices.report_to_connections}))
             ]
 
             print("Started Tornado")
@@ -76,6 +80,5 @@ class MessageManagerWebsocketFromServices:
     @staticmethod
     def report_to_connections(event):
         global G
-        print(G['lambda_connection_handler'].connections)
         for connection in G['lambda_connection_handler'].connections:
             asyncio.ensure_future(G['lambda_connection_handler'].connections[connection].send(event))

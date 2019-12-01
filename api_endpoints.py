@@ -41,18 +41,31 @@ def not_same_domain(url):
     return url != DOMAIN
 
 
-class AnalyzeQuery(RequestHandler):
-    def initialize(self):
-        pass
+class BaseHandler(RequestHandler):
 
+    def set_default_headers(self):
+        print("setting headers!!!")
+        self.set_header("Access-Control-Allow-Origin", "*")
+        self.set_header("Access-Control-Allow-Headers", "*")
+        self.set_header('Access-Control-Allow-Methods', '*')
+
+    def options(self):
+        # no body
+        self.set_status(204)
+        self.finish()
+
+class AnalyzeQuery(BaseHandler):
+    def initialize(self,handlers):
+        self.report = handlers["report"]
 
     async def get(self):
         result = db.reference('').get()
         self.write(result)
 
     async def post(self):
+        print("Entered post")
         params = json.loads(self.request.body)
-        ip = self.request.remote_addr
+        ip = self.request.remote_ip
         for param, val in params.items():
             # XSS
             for pload in XSS:
@@ -62,23 +75,30 @@ class AnalyzeQuery(RequestHandler):
             # SQLi
             if "'" in val and ('and' in val.lower() or 'or' in val.lower()) or '--' in val:
                 send_ref(ip, param, val, 'SQLi')
+                self.report({"SQLi" : {"ip":ip , "param" : param , "val" : val, "uid" : 99}})
+
             # CRLF
             if '%0d' in val.lower() or '%0a' in val.lower():
                 send_ref(ip, param, val, 'CRLF')
+                self.report({"CRLF" : {"ip":ip , "param" : param , "val" : val, "uid" : 99}})
+
             # OPEN Redirect
             if len([i for i in ['url', 'redirect', 'next'] if i in param.lower()]) > 0 \
                     and not_same_domain(val):
                 send_ref(ip, param, val, 'Open Redirect')
+                self.report({"Redirect" : {"ip":ip , "param" : param , "val" : val, "uid" : 99}})
+
             # Path Traversal
             for pload in TRAVERS:
                 if pload in val:
                     send_ref(ip, param, val, 'Path Traversal')
-                    break
+                    self.report({"Traversal" : {"ip":ip , "param" : param , "val" : val, "uid" : 99}})
 
+                    break
         return params
 
 
-class ViralUrls(RequestHandler):
+class ViralUrls(BaseHandler):
     def initialize(self):
         pass
 
@@ -96,19 +116,15 @@ class ViralUrls(RequestHandler):
         return self.write(malicious)
 
 
-class CSRF(RequestHandler):
+class CSRF(BaseHandler):
 
     def initialize(self,handlers):
         self.report = handlers["report"]
 
     async def post(self):
         params = json.loads(self.request.body)
-        self.report(params)
-        pass
-        # TODO: send websocket req like:
-        # The form params['formName'] at params['location'] can be CSRF vulnerable!
-
-
+        params['uid'] = '99'
+        self.report({"CSRF" : params})
 
 class IntrusionDetection(RequestHandler):
 

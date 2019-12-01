@@ -145,13 +145,22 @@ class IntrusionDetection(BaseHandler):
         print(params)
         inter = intrusion_ref.get()
         prev = [i for i in inter if inter[i]['path'] == params['path']]
-        if len(prev) == 0: prev = None
-        else: prev = prev[0]
+        if len(prev) == 0:
+            prev = None
+            key = None
+        else:
+            key = prev[0]
+            prev = inter[prev[0]]
         print(prev)
 
         if not prev:
             cnt = 1
-            print("here")
+            intrusion_ref.push({
+                "ip": self.request.remote_ip,
+                "path": params['path'],
+                "time": datetime.datetime.now().isoformat(),
+                "cnt": cnt
+            })
         else:
             cnt = prev['cnt']
             earlier_time = parse(prev['time'])
@@ -161,13 +170,7 @@ class IntrusionDetection(BaseHandler):
                 print("printed")
                 self.report({"Intrusion": params})
                 cnt = 1
-            else:
-                cnt += 1
+            cnt += 1
 
-        intrusion_ref.push({
-            "ip": self.request.remote_ip,
-            "path": params['path'],
-            "time": datetime.datetime.now().isoformat(),
-            "cnt": cnt
-        })
+            intrusion_ref.child(key).update({'cnt': cnt})
         self.write({"Result": "200 Success"})

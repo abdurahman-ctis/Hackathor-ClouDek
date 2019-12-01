@@ -9,6 +9,8 @@ from firebase_admin import db
 from requests import post
 from tornado.web import RequestHandler
 
+from dateutil.parser import parse
+
 cred = credentials.Certificate('ids-hackathor-636a3e9f4e4c.json')
 firebase_admin.initialize_app(cred, {
     'databaseURL': 'https://ids-hackathor.firebaseio.com/'
@@ -63,7 +65,7 @@ class AnalyzeQuery(BaseHandler):
 
     async def get(self):
         result = db.reference('').get()
-        self.write({"Result": "200 Success"})
+        self.write(result)
 
     async def post(self):
         print("Entered post")
@@ -141,17 +143,22 @@ class IntrusionDetection(BaseHandler):
     async def post(self):
         params = json.loads(self.request.body)
         print(params)
-        prev = intrusion_ref.child(params['path']).get()
+        inter = intrusion_ref.get()
+        prev = [i for i in inter if inter[i]['path'] == params['path']]
+        if len(prev) == 0: prev = None
+        else: prev = prev[0]
         print(prev)
 
         if not prev:
             cnt = 1
+            print("here")
         else:
             cnt = prev['cnt']
-            earlier_time = datetime.datetime.now()
+            earlier_time = parse(prev['time'])
             now = datetime.datetime.now()
-
+            print((now - earlier_time).seconds)
             if (now - earlier_time).seconds > 5 and cnt > 10:
+                print("printed")
                 self.report({"Intrusion": params})
                 cnt = 1
             else:

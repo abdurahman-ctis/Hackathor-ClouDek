@@ -24,9 +24,8 @@ class ConnectionHandler:
 
     def accept_connections(self, port, ip_filter = '0.0.0.0'):
         try:
-            loop = asyncio.get_event_loop()
-            start_server = websockets.serve(self.websocket_handler, ip_filter, port)
-            asyncio.get_event_loop().run_until_complete(start_server)
+            print("Accepting")
+            asyncio.get_event_loop().run_until_complete(websockets.serve(self.websocket_handler, ip_filter, port))
             print(f' ********* accepting connections on port {port} from {ip_filter} ************** ')
             #loop.run_forever()   #don't call this here in case multiple accept_connections are called from a higher level. Only call this once all coroutines have been added to the event loop
         except Exception as exc:
@@ -88,6 +87,7 @@ class ConnectionHandler:
             if type(msg) is dict:
                 msg = json.dumps(msg)
 
+            print("here")
 
             if self.use_compression:
                 msg = zlib.compress(msg.encode('utf-8'), self.zlib_compression_level)
@@ -103,6 +103,7 @@ class ConnectionHandler:
 
 
         async def recv(self):
+            print("here")
             msg = await self.this_socket.recv()
             #print('actually received: ' + str(msg))
             if self.AES_encryptor:   #if this is defined, use encryption
@@ -121,8 +122,8 @@ class ConnectionHandler:
         3) save the connection object created from this_websocket into the respective connection group
         4) this function keeps running listening on the port for incoming data.
         5) cleanup: remove the connection object from all groups if the connection is closed."""
-
-        #print('---- connection accepted by handler ----------- ')
+        print("Entered Handler")
+        print('---- connection accepted by handler ----------- ')
         this_connection = None  #allocate that this exists for cleanup
         auth_results = {}   #the authentication routine will write its results in here
         try:

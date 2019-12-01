@@ -4,7 +4,7 @@ import time
 import json
 import random
 import zlib  #for compression
-from .sangoma_utils import delete_element_from_nested_list_dict
+from .websocket_utils import delete_element_from_nested_list_dict
 
 
 

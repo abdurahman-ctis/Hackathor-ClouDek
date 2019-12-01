@@ -1,15 +1,15 @@
 import asyncio
 import json
 import time
-from .sangoma_utils import AES_encrypt
-from .sangoma_connector import ConnectionHandler
+from .websocket_utils import AES_encrypt
+from .websocket_connector import ConnectionHandler
 
 def setG(global_G):
     global G
     G = global_G
 
 # Added
-class MonitoringServiceAuthenticator():
+class IDSServiceAuthenticator():
 
     def __init__(self):
         self.connection_id_counter = 0

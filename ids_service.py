@@ -4,7 +4,7 @@ from tornado.ioloop import IOLoop
 from tornado.platform.asyncio import AsyncIOMainLoop
 from tornado.web import Application
 from tornado.httpclient import AsyncHTTPClient
-from SangomaUtils.sangoma_authenticators import *
+from WebSocketUtils.websocket_authenticators import *
 import json
 from time import time
 from urllib.parse import urlparse
@@ -12,7 +12,7 @@ import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import db
 from requests import post
-from SangomaUtils.sangoma_authenticators import *
+from WebSocketUtils.websocket_authenticators import *
 import asyncio
 
 WEBSOCKETS_PORT = 80
@@ -24,18 +24,15 @@ G = {}  # Global Dictionary
 class IDSService:
     def __init__(self):
         global G
-        import SangomaUtils.sangoma_authenticators
-        SangomaUtils.sangoma_authenticators.setG(G)
+        import WebSocketUtils.websocket_authenticators
+        WebSocketUtils.websocket_authenticators.setG(G)
         self.start_websocket_server(WEBSOCKETS_PORT)
         self.application = self.start_tornado()
 
 
     def start_websocket_server(self,port):
-        global G
-        import SangomaUtils.sangoma_authenticators
-        SangomaUtils.sangoma_authenticators.setG(G)
         """accepts connections from incoming lambda function requests"""
-        services_authenticator = MonitoringServiceAuthenticator()
+        services_authenticator = IDSServiceAuthenticator()
         services_message_manager = MessageManagerWebsocketFromServices()
         G['lambda_connection_handler'] = ConnectionHandler(authenticator=services_authenticator,
                                                         message_manager=services_message_manager)

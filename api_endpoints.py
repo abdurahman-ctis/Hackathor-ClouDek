@@ -1,6 +1,7 @@
 from tornado.web import RequestHandler
 import json
 from time import time
+import datetime
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import db
@@ -60,7 +61,7 @@ class AnalyzeQuery(BaseHandler):
 
     async def get(self):
         result = db.reference('').get()
-        self.write(result)
+        self.write({"Result" : "200 Success"})
 
     async def post(self):
         print("Entered post")
@@ -71,6 +72,7 @@ class AnalyzeQuery(BaseHandler):
             for pload in XSS:
                 if pload in val:
                     send_ref(ip, param, val, 'XSS')
+                    self.report({"XSS" : {"ip":ip , "param" : param , "val" : val, "uid" : 99}})
                     break
             # SQLi
             if "'" in val and ('and' in val.lower() or 'or' in val.lower()) or '--' in val:
@@ -93,14 +95,14 @@ class AnalyzeQuery(BaseHandler):
                 if pload in val:
                     send_ref(ip, param, val, 'Path Traversal')
                     self.report({"Traversal" : {"ip":ip , "param" : param , "val" : val, "uid" : 99}})
-
                     break
-        return params
 
+        self.write({"Result" : "200 Success"})
 
 class ViralUrls(BaseHandler):
-    def initialize(self):
-        pass
+    def initialize(self,handlers):
+        self.report = handlers["report"]
+
 
     async def post(self):
         params = json.loads(self.request.body)
@@ -113,7 +115,9 @@ class ViralUrls(BaseHandler):
                     malicious.append(url)
                 break
     
-        return self.write(malicious)
+        self.report({"Viral" : malicious})
+        self.write({"Result" : "200 Success"})
+
 
 
 class CSRF(BaseHandler):
@@ -125,18 +129,24 @@ class CSRF(BaseHandler):
         params = json.loads(self.request.body)
         params['uid'] = '99'
         self.report({"CSRF" : params})
+        self.write({"Result" : "200 Success"})
 
-class IntrusionDetection(RequestHandler):
+class IntrusionDetection(BaseHandler):
 
 
-    def initialize(self):
-        pass
+    def initialize(self,handlers):
+        self.report = handlers["report"]
 
-    async def get(self):
+    async def post(self):
         params = json.loads(self.request.body)
-        # TODO
-        #Get endpoint  from params
-        #increment visit times 
-        #check query params for fuzzy search or intrusion
-        #send alert in case found 
+        #Retrive Firebase record for specific endpoint
+        #contains counter,time
+        counter = 0
+        earlierTime = datetime.datetime.now()
+        now = datetime.datetime.now()
+  
+        if (now - earlierTime).seconds > 5 and counter > 10:
+            self.report({"Intrusion" : params})
+        #Add to firebase time and increment counter, if doesn't exist create with 1 as value
+        self.write({"Result" : "200 Success"})
 

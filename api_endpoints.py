@@ -140,7 +140,8 @@ class IntrusionDetection(BaseHandler):
 
     async def post(self):
         params = json.loads(self.request.body)
-        prev = intrusion_ref.get(params['path'])
+        print(params)
+        prev = intrusion_ref.child(params['path']).get()
         print(prev)
         if not prev:
             cnt = 1
@@ -155,10 +156,10 @@ class IntrusionDetection(BaseHandler):
             else:
                 cnt += 1
 
-        ref.push({
+        intrusion_ref.push({
             "ip": self.request.remote_ip,
             "path": params['path'],
-            "time": datetime.datetime.now(),
+            "time": datetime.datetime.now().isoformat(),
             "cnt": cnt
         })
         self.write({"Result": "200 Success"})

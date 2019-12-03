@@ -1,3 +1,6 @@
+
+<img src="https://raw.githubusercontent.com/abdurahman-ctis/ips-hackathor/master/clouddek.png?token=AIPDEMOGA5UCFFZZ6IL7WVS5553FE" alt="ClouDek Logo" >
+
 # ClouDek
 Web Vulnerabilities Incidents Monitoring Service using Machine Learning
 
@@ -7,8 +10,6 @@ The developer of a certain website could add our JS code, that routes all query 
 through a secure websockets connection send those results to a dashboard that has informative and attractive Widgets and Charts and Incoming Incidents alerts written in React and Redux.
 
 ## Screens
-
-<img src="https://raw.githubusercontent.com/abdurahman-ctis/ips-hackathor/master/clouddek.png?token=AIPDEMOGA5UCFFZZ6IL7WVS5553FE" alt="ClouDek Logo" >
 <img src="https://raw.githubusercontent.com/abdurahman-ctis/ips-hackathor/master/tech%20stack.jpg?token=AIPDEMLP5ZTFIFBPLI5CR4K555S6U" alt="Tech Stack" >
 
 

@@ -8,7 +8,7 @@ through a secure websockets connection send those results to a dashboard that ha
 
 ## Screens
 
-<img src="https://raw.githubusercontent.com/zeyadkhaled/TemporaryContacts/master/slides/" alt="Slide01" >
+<img src="https://raw.githubusercontent.com/abdurahman-ctis/ips-hackathor/master/tech stack.jpg" alt="Tech Stack" >
 
 
 
@@ -37,7 +37,7 @@ through a secure websockets connection send those results to a dashboard that ha
 
 ## Author
 [Zeyad Khaled](https://www.linkedin.com/in/zeyadkhaled/ "Zeyad Khaled")
-[Zeyad Khaled](https://www.linkedin.com/in/zeyadkhaled/ "Zeyad Khaled")
+[Hikmet Demir](https://www.linkedin.com/in/hikmet-demir/ "Hikmet Demir")
 [Zeyad Khaled](https://www.linkedin.com/in/zeyadkhaled/ "Zeyad Khaled")
 [Zeyad Khaled](https://www.linkedin.com/in/zeyadkhaled/ "Zeyad Khaled")
 

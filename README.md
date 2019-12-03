@@ -8,7 +8,7 @@ through a secure websockets connection send those results to a dashboard that ha
 
 ## Screens
 
-<img src="https://raw.githubusercontent.com/abdurahman-ctis/ips-hackathor/master/tech stack.jpg" alt="Tech Stack" >
+<img src="https://raw.githubusercontent.com/abdurahman-ctis/ips-hackathor/master/tech%20stack.jpg?token=AIPDEMLP5ZTFIFBPLI5CR4K555S6U" alt="Tech Stack" >
 
 
 

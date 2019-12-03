@@ -8,6 +8,7 @@ through a secure websockets connection send those results to a dashboard that ha
 
 ## Screens
 
+<img src="https://raw.githubusercontent.com/abdurahman-ctis/ips-hackathor/master/clouddek.png?token=AIPDEMOGA5UCFFZZ6IL7WVS5553FE" alt="ClouDek Logo" >
 <img src="https://raw.githubusercontent.com/abdurahman-ctis/ips-hackathor/master/tech%20stack.jpg?token=AIPDEMLP5ZTFIFBPLI5CR4K555S6U" alt="Tech Stack" >
 
 
@@ -38,7 +39,8 @@ through a secure websockets connection send those results to a dashboard that ha
 ## Author
 - [Zeyad Khaled](https://www.linkedin.com/in/zeyadkhaled/ "Zeyad Khaled")
 - [Hikmet Demir](https://www.linkedin.com/in/hikmet-demir/ "Hikmet Demir")
-
+- [Abdurahman Atakishiyev](https://www.linkedin.com/in/abd/ "Abdurahman Atakishiyev"
+- [Ping Cheng](https://www.linkedin.com/in/ping-cheng/ "Ping Cheng"
 
 
 

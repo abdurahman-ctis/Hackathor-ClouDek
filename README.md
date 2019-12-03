@@ -40,8 +40,8 @@ through a secure websockets connection send those results to a dashboard that ha
 ## Author
 - [Zeyad Khaled](https://www.linkedin.com/in/zeyadkhaled/ "Zeyad Khaled")
 - [Hikmet Demir](https://www.linkedin.com/in/hikmet-demir/ "Hikmet Demir")
-- [Abdurahman Atakishiyev](https://www.linkedin.com/in/abd/ "Abdurahman Atakishiyev"
-- [Ping Cheng](https://www.linkedin.com/in/ping-cheng/ "Ping Cheng"
+- [Abdurahman Atakishiyev](https://www.linkedin.com/in/abd/ "Abdurahman Atakishiyev")
+- [Ping Cheng](https://www.linkedin.com/in/ping-cheng/ "Ping Cheng")
 
 
 

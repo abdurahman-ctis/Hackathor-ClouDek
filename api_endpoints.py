@@ -10,7 +10,7 @@ from firebase_admin import db
 from requests import post
 from tornado.web import RequestHandler
 
-cred = credentials.Certificate('ids-hackathor-636a3e9f4e4c.json')
+cred = credentials.Certificate('CERTIFICATE_FILE')
 firebase_admin.initialize_app(cred, {
     'databaseURL': 'https://ids-hackathor.firebaseio.com/'
 })
@@ -22,7 +22,7 @@ with open('payloads.json', encoding="utf8") as f:
     XSS = loaded['XSS']
     TRAVERS = loaded['TRAVERS']
 
-VIRUSTOTAL = '66a5fb757b258c33502762d5b0f494111d7cc70032cfcf115336ad837a13b9ea'
+VIRUSTOTAL = 'API_KEY'
 DOMAIN = "bilkent.com"
 
 

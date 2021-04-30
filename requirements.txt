@@ -52,6 +52,6 @@ six==1.13.0
 sklearn==0.0
 tornado==6.0.3
 uritemplate==3.0.0
-urllib3==1.25.7
+urllib3==1.25.8
 websockets==7.0
 Werkzeug==0.16.0
